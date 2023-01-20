@@ -12,7 +12,7 @@ jobs:
       matrix:
         os: [ubuntu-18.04, macos-11, windows-2019]
         gcc: ['7-2017-q4', 'latest']
-        cmake: ['3.6.0', '3.21.3', '3.22.1', '']
+        cmake: ['3.6.0', '']  # Empty string installs the latest CMake release
       fail-fast: false
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }}, gcc ${{ matrix.gcc }}, cmake ${{ matrix.cmake || 'latest'}}
