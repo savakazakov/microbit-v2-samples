@@ -1,0 +1,171 @@
+// #include "MicroBit.h"
+// #include "samples/Tests.h"
+
+// MicroBit uBit;
+
+// int main()
+// {
+//     uBit.init();
+
+//     out_of_box_experience();
+// }
+
+// Substitute this for the exact header files at some point.
+#include "MicroBit.h"
+#include "samples/Tests.h"
+#include "Button.h"
+#include "CodalDmesg.h"
+#include "MicroBitDisplay.h"
+#include "MicroBitIO.h"
+#include "Timer.h"
+
+// #include "MicroBitConfig.h"
+// #include "CodalHeapAllocator.h"
+// #include "codal-core/inc/types/Event.h"
+// #include "CodalDevice.h"
+// #include "ErrorNo.h"
+// #include "NRFLowLevelTimer.h"
+// #include "Matrix4.h"
+// #include "CodalCompat.h"
+// #include "CodalComponent.h"
+// #include "CodalDmesg.h"
+// #include "ManagedType.h"
+// #include "ManagedString.h"
+// #include "NotifyEvents.h"
+
+// #include "Button.h"
+// #include "MultiButton.h"
+// #include "NRF52Pin.h"
+// #include "NRF52Serial.h"
+// #include "NRF52I2C.h"
+// #include "NRF52ADC.h"
+#include "NRF52TouchSensor.h"
+
+// #include "MicroBitDisplay.h"
+// #include "CodalFiber.h"
+// #include "MessageBus.h"
+// #include "FXOS8700.h"
+// #include "LSM303Accelerometer.h"
+// #include "LSM303Magnetometer.h"
+// #include "MicroBitRadio.h"
+// #include "MicroBitThermometer.h"
+// #include "MicroBitCompassCalibrator.h"
+// #include "MicroBitDevice.h"
+#include "MicroBitCompat.h"
+// #include "MicroBitAccelerometer.h"
+// #include "MicroBitCompass.h"
+// #include "MicroBitPowerManager.h"
+// #include "NRF52FlashManager.h"
+// #include "MicroBitUSBFlashManager.h"
+// #include "MicroBitLog.h"
+// #include "MicroBitAudio.h"
+// #include "StreamNormalizer.h"
+// #include "LevelDetector.h"
+// #include "LevelDetectorSPL.h"
+// #include "PulseIn.h"
+// #include "neopixel.h"
+
+// #include "MESEvents.h"
+
+// #include "LowLevelTimer.h"
+// #include "nrf.h"
+// #include "nrfx_config.h"
+// #include "NRFLowLevelTimer.h"
+
+static const MatrixPoint ledMatrixPositions[5*5] =
+{
+    {0,0},{0,1},{0,2},{0,3},{0,4},
+    {1,0},{1,1},{1,2},{1,3},{1,4},
+    {2,0},{2,1},{2,2},{2,3},{2,4},
+    {3,0},{3,1},{3,2},{3,3},{3,4},
+    {4,0},{4,1},{4,2},{4,3},{4,4}
+};
+
+// MicroBit uBit;
+
+// NRFLowLevelTimer adcTimer(NRF_TIMER2, TIMER2_IRQn);
+// NRFLowLevelTimer capTouchTimer(NRF_TIMER3, TIMER3_IRQn);
+
+// NRF52ADC adc(adcTimer, 91);
+// NRF52TouchSensor touchSensor(capTouchTimer);
+
+// MicroBitIO io(adc, touchSensor);
+// NRF52Pin *ledRowPins[5] = {&io.row1, &io.row2, &io.row3, &io.row4, &io.row5};
+// NRF52Pin *ledColPins[5] = {&io.col1, &io.col2, &io.col3, &io.col4, &io.col5};
+// const MatrixMap ledMatrixMap = {5, 5, 5, 5, (Pin **)ledRowPins, (Pin **)ledColPins, ledMatrixPositions};
+// MicroBitDisplay display(ledMatrixMap);
+// MessageBus bus;
+
+// Button buttonA(io.P5, DEVICE_ID_BUTTON_A, DEVICE_BUTTON_ALL_EVENTS, ACTIVE_LOW);
+// Button buttonB(io.P11, DEVICE_ID_BUTTON_B, DEVICE_BUTTON_ALL_EVENTS, ACTIVE_LOW);
+
+systemTimer(NRF_TIMER1, TIMER1_IRQn), adcTimer(NRF_TIMER2, TIMER2_IRQn),
+
+capTouchTimer(NRF_TIMER3, TIMER3_IRQn);
+timer(systemTimer), messageBus(), adc(adcTimer, 91);
+touchSensor(capTouchTimer);
+io(adc, touchSensor);
+serial(io.usbTx, io.usbRx, NRF_UARTE0);
+
+_i2c(io.sda, io.scl), i2c(io.P20, io.P19), power(_i2c, io, systemTimer), flash(_i2c, io, power),
+internalFlash(MICROBIT_STORAGE_PAGE, 1, MICROBIT_CODEPAGESIZE),
+storage(internalFlash, 0), ledRowPins{&io.row1, &io.row2, &io.row3, &io.row4, &io.row5},
+ledColPins{&io.col1, &io.col2, &io.col3, &io.col4, &io.col5},
+
+ledMatrixMap{5, 5, 5, 5, (Pin **)ledRowPins, (Pin **)ledColPins, ledMatrixPositions},
+display(ledMatrixMap), buttonA(io.P5, DEVICE_ID_BUTTON_A, DEVICE_BUTTON_ALL_EVENTS, ACTIVE_LOW),
+buttonB(io.P11, DEVICE_ID_BUTTON_B, DEVICE_BUTTON_ALL_EVENTS, ACTIVE_LOW),
+buttonAB(DEVICE_ID_BUTTON_A, DEVICE_ID_BUTTON_B, DEVICE_ID_BUTTON_AB),
+logo(io.logo, touchSensor, CAPTOUCH_DEFAULT_CALIBRATION), radio(), thermometer(),
+accelerometer(MicroBitAccelerometer::autoDetect(_i2c)),
+compass(MicroBitCompass::autoDetect(_i2c)),
+compassCalibrator(compass, accelerometer, display, storage),
+audio(io.P0, io.speaker, adc, io.microphone, io.runmic),
+log(flash, power, serial)
+
+    // MicroBitDisplay display;
+
+    int main()
+{
+    scheduler_init(bus);
+
+    display.scroll(":)");
+    
+    // io.speaker.setAnalogValue(512);
+    // // 2.7 kHz.
+    // io.speaker.setAnalogPeriodUs(370);
+    // // TODO: Read more about this.
+    // io.speaker.setHighDrive(true);
+
+    // // 8 kHz.
+    // io.speaker.setAnalogPeriodUs(125);
+    // io.speaker.setHighDrive(true);
+
+    while(1)
+    {
+        fiber_sleep(1000);
+        DMESG("In loop\n");
+    }
+}
+
+// void onPressedA(MicroBitEvent e)
+// {
+//     io.speaker.setAnalogPeriodUs(370);
+//     io.speaker.setAnalogValue(512);
+// }
+
+// void onReleasedA(MicroBitEvent e)
+// {
+//     io.speaker.setAnalogValue(0);
+// }
+
+// void onPressedB(MicroBitEvent e)
+// {
+//     io.speaker.setAnalogPeriodUs(125);
+//     io.speaker.setAnalogValue(512);
+// }
+
+// void onReleasedB(MicroBitEvent e)
+// {
+//     io.speaker.setAnalogValue(0);
+// }
