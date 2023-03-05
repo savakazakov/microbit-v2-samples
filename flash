@@ -13,7 +13,7 @@ else
 fi
 
 # Run the python script to generate the MICROBIT.hex file.
-python3 build.py --dev --clean
+python3 build.py $1 $2
 
 # Move the output.hex onto the micro:bit.
 cp MICROBIT.hex /mnt/usb
