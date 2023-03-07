@@ -1,16 +1,9 @@
-#include "Radar.h"
-#include "Timer.h"
-#include "MicroBitDevice.h"
+#include "MicroBitRadar.h"
 #include "CodalDmesg.h"
 
 using namespace codal;
 // #define CODAL_DEBUG
 // #define DEVICE_DBG
-
-// MicroBitI2C i2c = MicroBitI2C(I2C_SDA0, I2C_SCL0);
-// MicroBitAccelerometer accelerometer = MicroBitAccelerometer(i2c);
-// MicroBitDisplay display;
-// MessageBus bus;
 
 // Timers required for the initialization of the IO component.
 NRFLowLevelTimer systemTimer(NRF_TIMER1, TIMER1_IRQn);
@@ -61,33 +54,33 @@ MicroBitCompassCalibrator compassCalibrator(compass, accelerometer, display, sto
 MicroBitAudio audio(io.P0, io.speaker, adc, io.microphone, io.runmic);
 MicroBitLog logger(flash, power, serial);
 
-// #if CONFIG_ENABLED(DMESG_SERIAL_DEBUG)
-// #if DEVICE_DMESG_BUFFER_SIZE > 0
-//     codal_dmesg_set_flush_fn(microbit_dmesg_flush);
-// #endif
-// #endif
+void microbit_dmesg_flush()
+{
+    // #if CONFIG_ENABLED(DMESG_SERIAL_DEBUG)
+    // #if DEVICE_DMESG_BUFFER_SIZE > 0
+        if (codalLogStore.ptr > 0 /* && microbit_device_instance */)
+        {
+            for (uint32_t i=0; i<codalLogStore.ptr; i++)
+                /*( (MicroBit *)microbit_device_instance)-> */serial.putc(codalLogStore.buffer[i]);
 
-// void microbit_dmesg_flush()
-// {
-//     #if CONFIG_ENABLED(DMESG_SERIAL_DEBUG)
-//     #if DEVICE_DMESG_BUFFER_SIZE > 0
-//         if (codalLogStore.ptr > 0 && microbit_device_instance)
-//         {
-//             for (uint32_t i=0; i<codalLogStore.ptr; i++)
-//                 ((MicroBit *)microbit_device_instance)->serial.putc(codalLogStore.buffer[i]);
-
-//             codalLogStore.ptr = 0;
-//         }
-//     #endif
-//     #endif
-// }
+            codalLogStore.ptr = 0;
+        }
+    // #endif
+    // #endif
+}
 
 int main()
 {
     scheduler_init(messageBus);
 
+    // #if CONFIG_ENABLED(DMESG_SERIAL_DEBUG)
+    // #if DEVICE_DMESG_BUFFER_SIZE > 0
+    // codal_dmesg_set_flush_fn(microbit_dmesg_flush);
+    // #endif
+    // #endif
+
     display.scroll(":)");
-    // DMESG(":)\n");
+    DMESG(":)\n");
 
     messageBus.listen(MICROBIT_ID_BUTTON_A, DEVICE_BUTTON_EVT_UP, onReleasedA,
                       MESSAGE_BUS_LISTENER_IMMEDIATE);
@@ -111,17 +104,17 @@ int main()
     while (1)
     {
         fiber_sleep(2000);
-        display.scroll("X");
+        // display.scroll("X");
         DMESG("In loop\n");
-        DMESGF("Test\n");
-        DMESGN("Test\n");
-        serial.printf("Temperature\n");
+        // DMESGF("Test1\n");
+        // DMESGN("Test2\n");
+        // serial.printf("Temperature\n");
     }
 }
 
 void onPressedA(MicroBitEvent e)
 {
-    io.speaker.setAnalogPeriodUs(370);
+    io.speaker.setAnalogPeriodUs(125);
     io.speaker.setAnalogValue(512);
 }
 
@@ -132,11 +125,16 @@ void onReleasedA(MicroBitEvent e)
 
 void onPressedB(MicroBitEvent e)
 {
-    io.speaker.setAnalogPeriodUs(125);
+    io.speaker.setAnalogPeriodUs(370);
     io.speaker.setAnalogValue(512);
 }
 
 void onReleasedB(MicroBitEvent e)
 {
     io.speaker.setAnalogValue(0);
+}
+
+codal::MicroBitRadar::~MicroBitRadar()
+{
+    
 }
