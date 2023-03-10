@@ -2,6 +2,7 @@
 #include "MicroBitRadar.h"
 
 MicroBit uBit;
+MicroBitRadar radar;
 
 void onPressedA(MicroBitEvent e)
 {
@@ -42,13 +43,17 @@ int main()
 
     // io.speaker.setAnalogValue(512);
     // 2.7 kHz.
-    uBit.io.speaker.setAnalogPeriodUs(370);
+    // uBit.io.speaker.setAnalogPeriodUs(370);
     // TODO: Read more about this.
     uBit.io.speaker.setHighDrive(true);
 
     // 8 kHz.
-    uBit.io.speaker.setAnalogPeriodUs(125);
-    uBit.io.speaker.setHighDrive(true);
+    // uBit.io.speaker.setAnalogPeriodUs(125);
+    // uBit.io.speaker.setHighDrive(true);
+
+    radar = new MicroBitRadar();
+
+    radar.fft_test();
 
     while (1)
     {

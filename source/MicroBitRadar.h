@@ -3,6 +3,10 @@
 
 // Substitute this for the components that are needed by the Radar component.
 #include "MicroBit.h"
+#include "CodalDmesg.h"
+#include "MicroBitAudioProcessor.h"
+#include "StreamNormalizer.h"
+#include "Tests.h"
 // #include "Timer.h"
 // #include "MicroBitDevice.h"
 // #include "CodalDmesg.h"
@@ -16,7 +20,6 @@
 // #define CONFIG_AUDIO_MIXER_OUTPUT_LATENCY_US                                                       
 //     (uint32_t)((CONFIG_MIXER_BUFFER_SIZE / 2) * (1000000.0f / 44100.0f))
 // #endif
-
 
 namespace codal
 {
@@ -39,6 +42,7 @@ namespace codal
         NRF52Serial serial;
         MicroBitI2C _i2c; // Internal I2C for motion sensors
         MicroBitI2C i2c;  // External I2C for edge connector
+
         // MicroBitPowerManager power;
         // MicroBitUSBFlashManager flash;
         // NRF52FlashManager internalFlash;
@@ -54,6 +58,11 @@ namespace codal
         MicroBitRadio radio;
         MicroBitThermometer thermometer;
         MicroBitAudio audio;
+
+        // FFT stuff.
+        static NRF52ADCChannel *mic;
+        static StreamNormalizer *processor;
+        static MicroBitAudioProcessor *fft;
 
         private:
         // bool speakerEnabled;                    // State of on board speaker
@@ -108,6 +117,12 @@ namespace codal
          * Used to trigger the radar algorithm.
          */
         virtual void periodicCallback();
+
+        /**
+         * Creates an example MicroBitAudioProcessor and then queries it for
+         * results. Currently configured to use 1024 samples with 8bit signed data.
+         */
+        void fft_test();
 
         // TODO: Add all functions that I would like the radar to service.
         // Think about the API.
