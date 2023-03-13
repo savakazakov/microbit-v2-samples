@@ -1,8 +1,11 @@
 #include "MicroBit.h"
 #include "MicroBitRadar.h"
+#include "CodalDmesg.h"
+#include "MicroBitAudioProcessor.h"
+#include "arm_math.h"
 
 MicroBit uBit;
-MicroBitRadar radar;
+MicroBitRadar *radar;
 
 void onPressedA(MicroBitEvent e)
 {
@@ -51,9 +54,9 @@ int main()
     // uBit.io.speaker.setAnalogPeriodUs(125);
     // uBit.io.speaker.setHighDrive(true);
 
-    radar = new MicroBitRadar();
+    radar = new codal::MicroBitRadar();
 
-    radar.fft_test();
+    radar->fft_test();
 
     while (1)
     {

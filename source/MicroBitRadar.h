@@ -7,6 +7,7 @@
 #include "MicroBitAudioProcessor.h"
 #include "StreamNormalizer.h"
 #include "Tests.h"
+#include "arm_math.h"
 // #include "Timer.h"
 // #include "MicroBitDevice.h"
 // #include "CodalDmesg.h"
@@ -26,41 +27,15 @@ namespace codal
     /**
      * Class definition for MicroBitRadar
      */
-    class MicroBitRadar : public CodalComponent
+    class MicroBitRadar/*  : public CodalComponent */
     {
         public:
         static MicroBitRadar *instance;                     // Primary instance of MicroBitRadar, on demand activated.
         // TODO: Make sure everything that is public, needs to be public.
-        NRFLowLevelTimer systemTimer;
-        NRFLowLevelTimer adcTimer;
-        NRFLowLevelTimer capTouchTimer;
-        Timer timer;
-        MessageBus messageBus;
-        NRF52ADC adc;
-        NRF52TouchSensor touchSensor;
-        MicroBitIO io;
-        NRF52Serial serial;
-        MicroBitI2C _i2c; // Internal I2C for motion sensors
-        MicroBitI2C i2c;  // External I2C for edge connector
-
-        // MicroBitPowerManager power;
-        // MicroBitUSBFlashManager flash;
-        // NRF52FlashManager internalFlash;
-        // MicroBitStorage storage; // Persistent key value store
-        // NRF52Pin *ledRowPins[5];
-        // NRF52Pin *ledColPins[5];
-        // const MatrixMap ledMatrixMap;
-        // MicroBitDisplay display;
-        // Button buttonA;
-        // Button buttonB;
-        // MultiButton buttonAB;
-        // TouchButton logo;
-        MicroBitRadio radio;
-        MicroBitThermometer thermometer;
-        MicroBitAudio audio;
+        MicroBit uBit;
 
         // FFT stuff.
-        static NRF52ADCChannel *mic;
+        static NRF52ADCChannel *mic;                // mic
         static StreamNormalizer *processor;
         static MicroBitAudioProcessor *fft;
 
@@ -89,26 +64,6 @@ namespace codal
          * Destructor.
          */
         ~MicroBitRadar();
-
-        /**
-         * Demand request from a component to enable the default instance of this audio pipeline
-         */
-        static void requestActivation();
-
-        /**
-         * post-constructor initialisation method
-         */
-        int enable();
-
-        /**
-         * Shut down the radar component.
-         */
-        int disable();
-
-        /**
-         * Post constructor initialisation method.
-         */
-        int init();
 
         /**
          * TODO: Refine this comment.

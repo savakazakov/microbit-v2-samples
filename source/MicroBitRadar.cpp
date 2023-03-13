@@ -1,12 +1,13 @@
 #include "MicroBitRadar.h"
 #include "CodalDmesg.h"
-
+#include "arm_math.h"
 
 using namespace codal;
 
-MicroBitRadar* MicroBitRadar::instance = NULL;
-// #define CODAL_DEBUG
-// #define DEVICE_DBG
+MicroBitRadar *MicroBitRadar::instance = NULL;
+NRF52ADCChannel *MicroBitRadar::mic = NULL;
+StreamNormalizer *MicroBitRadar::processor = NULL;
+MicroBitAudioProcessor *MicroBitRadar::fft = NULL;
 
 /**
  * Constructor.
@@ -16,57 +17,33 @@ MicroBitRadar* MicroBitRadar::instance = NULL;
  * performed by the radar component.
  */
 MicroBitRadar::MicroBitRadar() :
-    systemTimer(NRF_TIMER1, TIMER1_IRQn),
-    adcTimer(NRF_TIMER2, TIMER2_IRQn),
-    capTouchTimer(NRF_TIMER3, TIMER3_IRQn),
-    timer(systemTimer),
-    messageBus(),
-    adc(adcTimer, 91),
-    touchSensor(capTouchTimer),
-    io(adc, touchSensor),
-    serial(io.usbTx, io.usbRx, NRF_UARTE0),
-    _i2c(io.sda, io.scl),
-    i2c(io.P20, io.P19),
-    radio(),
-    thermometer(),
-    audio(io.P0, io.speaker, adc, io.microphone, io.runmic)
+    uBit()
 {
-    // Initialise the fiber scheduler.
-    scheduler_init(messageBus);
-
-    // Clear our status
-    // TODO: Make sure I need this.
-    status = 0;
-
     // If we are the first instance created, schedule it for on demand activation.
     // TODO: Make sure I need this.
     if (MicroBitRadar::instance == NULL)
         MicroBitRadar::instance = this;
 
-    // Add pullup resisitor to IRQ line (it's floating ACTIVE LO)
-    // io.irq1.getDigitalValue();
-    // io.irq1.setPull(PullMode::Up);
-    // io.irq1.setActiveLo();
-
-    // TODO: Make sure I need this.
-    _i2c.setFrequency(400000);
-
     // Bring up internal speaker as high drive.
     // TODO: Make sure I need this.
-    io.speaker.setHighDrive(true);
+    uBit.io.speaker.setHighDrive(true);
 
     // FFT stuff.
-    if(mic == NULL)
+    if (MicroBitRadar::mic == NULL)
     {
-        mic = adc.getChannel(io.microphone);
-        mic->setGain(7, 0);
+        MicroBitRadar::mic = uBit.adc.getChannel(uBit.io.microphone);
+        MicroBitRadar::mic->setGain(7, 0);
     }
 
-    if(processor == NULL)
-        processor = new StreamNormalizer(mic->output, 1.0f, true, DATASTREAM_FORMAT_8BIT_SIGNED, 10);
+    if (MicroBitRadar::processor == NULL)
+    {
+        MicroBitRadar::processor = new StreamNormalizer(mic->output, 1.0f, true, DATASTREAM_FORMAT_8BIT_SIGNED, 10);
+    }
 
-    if (fft == NULL)
-        fft = new MicroBitAudioProcessor(processor->output);
+    if (MicroBitRadar::fft == NULL)
+    {
+        MicroBitRadar::fft = new MicroBitAudioProcessor(processor->output);
+    }
 }
 
 codal::MicroBitRadar::~MicroBitRadar()
@@ -78,8 +55,8 @@ void codal::MicroBitRadar::fft_test()
 {
     DMESG("START of FFT.");
 
-    io.runmic.setDigitalValue(1);
-    io.runmic.setHighDrive(true);
+    uBit.io.runmic.setDigitalValue(1);
+    uBit.io.runmic.setHighDrive(true);
 
     // Start fft running
     fft->startRecording();

@@ -24,6 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 #include "MicroBit.h"
 #include "MicroBitAudioProcessor.h"
+// #include "/home/savakazakov/RADAR/microbit-v2-samples/CMSIS-DSP/Include/arm_math.h"
+// #include "arm_math.h"
+// #include </home/savakazakov/RADAR/microbit-v2-samples/CMSIS-DSP/Include/arm_math.h>
+#include <arm_math.h>
 
 MicroBitAudioProcessor::MicroBitAudioProcessor(DataSource& source) : audiostream(source)
 {
@@ -55,7 +59,6 @@ MicroBitAudioProcessor::~MicroBitAudioProcessor()
 
 int MicroBitAudioProcessor::pullRequest()
 {
-
     int s;
     int result;
 
@@ -63,7 +66,6 @@ int MicroBitAudioProcessor::pullRequest()
 
     if (!recording)
         return DEVICE_OK;
-
 
     //using 8 bits produces more accurate to input results (not 2x like using 16) but issue with 
     //F and G both producing 363hz -> investigate futher with crossing 8 bit + differnet sample numbers
@@ -123,7 +125,6 @@ int MicroBitAudioProcessor::setDivisor(int d)
     divisor = d;
     return DEVICE_OK;
 }
-
 
 void MicroBitAudioProcessor::startRecording()
 {
