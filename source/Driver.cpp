@@ -1,11 +1,11 @@
 #include "MicroBit.h"
 #include "MicroBitRadar.h"
 #include "CodalDmesg.h"
-#include "MicroBitAudioProcessor.h"
-#include "arm_math.h"
+// #include "MicroBitAudioProcessor.h"
+// #include "arm_math.h"
 
 MicroBit uBit;
-MicroBitRadar *radar;
+MicroBitRadar* radar;
 
 void onPressedA(MicroBitEvent e)
 {
@@ -31,9 +31,10 @@ void onReleasedB(MicroBitEvent e)
 
 int main()
 {
+    uBit.serial.printf("uBit constructed!\n"); // REMOVE PRINTING.
     uBit.init();
     uBit.display.scroll(":)");
-    DMESG(":)\n");
+    uBit.serial.printf("After uBit.init()\n"); // REMOVE PRINTING.
 
     uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, DEVICE_BUTTON_EVT_UP, onReleasedA,
                       MESSAGE_BUS_LISTENER_IMMEDIATE);
@@ -48,24 +49,22 @@ int main()
     // 2.7 kHz.
     // uBit.io.speaker.setAnalogPeriodUs(370);
     // TODO: Read more about this.
-    uBit.io.speaker.setHighDrive(true);
 
-    // 8 kHz.
-    // uBit.io.speaker.setAnalogPeriodUs(125);
-    // uBit.io.speaker.setHighDrive(true);
 
-    radar = new codal::MicroBitRadar();
+    uBit.serial.printf("Before initializing radar.\n"); // REMOVE PRINTING.
 
-    radar->fft_test();
+    radar = new MicroBitRadar(&uBit);
+    radar->init();
+    radar->radioTest();
 
-    while (1)
+    uBit.serial.printf("After initializing radar.\n"); // REMOVE PRINTING.
+
+    while (true)
     {
-        uBit.sleep(2000);
-        // display.scroll("X");
+        uBit.sleep(1000);
         DMESG("In loop\n");
 
-        // DMESGF("Test1\n");
-        // DMESGN("Test2\n");
-        // uBit.serial.printf("Temperature\n");
+        radar->periodicCallback();
+        radar->uBit->display.scroll("YES\n");
     }
 }

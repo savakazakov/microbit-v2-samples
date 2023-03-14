@@ -3,14 +3,22 @@
 
 // Substitute this for the components that are needed by the Radar component.
 #include "MicroBit.h"
-#include "CodalDmesg.h"
-#include "MicroBitAudioProcessor.h"
-#include "StreamNormalizer.h"
-#include "Tests.h"
-#include "arm_math.h"
+// #include "CodalDmesg.h"
+// #include "MicroBitAudioProcessor.h"
+// #include "StreamNormalizer.h"
+// #include "Tests.h"
+// #include "arm_math.h"
 // #include "Timer.h"
 // #include "MicroBitDevice.h"
 // #include "CodalDmesg.h"
+
+// #define MICROBIT_UBIT_AS_STATIC_OBJECT
+
+// #ifdef MICROBIT_UBIT_AS_STATIC_OBJECT
+// extern MicroBit uBit;
+// #else
+// extern MicroBit &uBit;
+// #endif
 
 // Status Flags
 // #define MICROBIT_AUDIO_STATUS_DEEPSLEEP 0x0001
@@ -30,14 +38,14 @@ namespace codal
     class MicroBitRadar/*  : public CodalComponent */
     {
         public:
-        static MicroBitRadar *instance;                     // Primary instance of MicroBitRadar, on demand activated.
+        // static MicroBitRadar *instance;                     // Primary instance of MicroBitRadar, on demand activated.
         // TODO: Make sure everything that is public, needs to be public.
-        MicroBit uBit;
+        MicroBit* uBit;
 
         // FFT stuff.
-        static NRF52ADCChannel *mic;                // mic
-        static StreamNormalizer *processor;
-        static MicroBitAudioProcessor *fft;
+        // static NRF52ADCChannel *mic;                // mic
+        // static StreamNormalizer *processor;
+        // static MicroBitAudioProcessor *fft;
 
         private:
         // bool speakerEnabled;                    // State of on board speaker
@@ -58,7 +66,7 @@ namespace codal
         /**
          * Constructor.
          */
-        MicroBitRadar();
+        MicroBitRadar(MicroBit* uBit);
 
         /**
          * Destructor.
@@ -72,6 +80,10 @@ namespace codal
          * Used to trigger the radar algorithm.
          */
         virtual void periodicCallback();
+
+
+        void init(/* MicroBit uBit, MicroBitRadio radio */);
+        void radioTest();
 
         /**
          * Creates an example MicroBitAudioProcessor and then queries it for
