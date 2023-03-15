@@ -1,22 +1,44 @@
 #!/usr/bin/env bash
 
-# Check if the micro:bit is mounted to /mnt/usb.
-if mountpoint -q /mnt/usb; then
-    echo "/mnt/usb already mounted."
+dirs=()
+
+# Check if the micro:bit is mounted to /mnt/D or /mnt/E.
+if mountpoint -q /mnt/D; then
+    echo "/mnt/D already mounted."
+    dirs+=("D")
 else
-    if sudo mount -t drvfs D: /mnt/usb; then
-        echo "/mnt/usb mounted successfully."
+    if sudo mount -t drvfs D: /mnt/D; then
+        echo "/mnt/D mounted successfully."
+        dirs+=("D")
     else
-        echo "Micro:bit not plugged in."
-        exit 1;
+        echo "Micro:bit not plugged in as D:"
     fi
+fi
+
+if mountpoint -q /mnt/E; then
+    echo "/mnt/E already mounted."
+    dirs+=("E")
+else
+    if sudo mount -t drvfs E: /mnt/E; then
+        echo "/mnt/E mounted successfully."
+        dirs+=("E")
+    else
+        echo "Micro:bit not plugged in as E:"
+    fi
+fi
+
+if [ ${#dirs[@]} -eq 0 ]; then
+    echo "So Micro:Bits?"
+    exit 1
 fi
 
 # Run the python script to generate the MICROBIT.hex file.
 python3 build.py $1 $2
 
-# Move the output.hex onto the micro:bit.
-cp MICROBIT.hex /mnt/usb
+# Move the output.hex onto the micro:bits.
+for dir in ${dirs[@]}; do
+    cp MICROBIT.hex /mnt/$dir
+done
 
 if [ $? -eq 0 ]; then
     echo "Flash: OK"
