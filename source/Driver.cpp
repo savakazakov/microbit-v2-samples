@@ -25,6 +25,8 @@ void onPressedB(MicroBitEvent e)
     // 2.7 kHz.
     // uBit.io.speaker.setAnalogPeriodUs(370);
     // uBit.io.speaker.setAnalogValue(512);
+
+    radar->micTest();
 }
 
 void onReleasedB(MicroBitEvent e)

@@ -5,6 +5,11 @@
 using namespace codal;
 
 MicroBitRadar *MicroBitRadar::instance = NULL;
+NRF52ADCChannel *MicroBitRadar::mic = NULL;
+SerialStreamer *MicroBitRadar::streamer = NULL;
+StreamNormalizer *MicroBitRadar::processor = NULL;
+LevelDetector *MicroBitRadar::level = NULL;
+LevelDetectorSPL *MicroBitRadar::levelSPL = NULL;
 
 static void onData(MicroBitEvent e);
 
@@ -48,30 +53,30 @@ void MicroBitRadar::radioTest()
     // Serialise the struct.
     uint8_t* pl_bytes = reinterpret_cast<uint8_t *>(&payloadStruct);
 
-    PacketBuffer packetBuf = PacketBuffer(pl_bytes, (int) sizeof(Payload)); // Creates a PacketBuffer 3 bytes long.
-
-    // // // ##########################################################################################
-    // uint8_t *packetPl = packetBuf.getBytes();
-
-    // // Deserialise.
-    // // Create a new struct to hold the converted bytes.
-    // MicroBitRadar::Payload receivePlayload;
-
-    // // Copy the bytes from the uint8_t pointer into the new struct.
-    // memcpy(&receivePlayload, packetPl, (int) sizeof(MicroBitRadar::Payload));
-
-    // // // std::string str = std::to_string(receivePlayload.serial);
-    // // // ManagedString ms = ManagedString(str.c_str());
-    // // // MicroBitRadar::instance->uBit->display.scrollAsync(ms);
-
-    // uBit->serial.printf("Device id after processing = %d.\n", receivePlayload.serial);         // REMOVE PRINTING.
-    // uBit->serial.printf("(int) sizeof(MicroBitRadar::Payload) = %d.\n", (int) sizeof(MicroBitRadar::Payload)); // REMOVE PRINTING.
-
-    // // ##########################################################################################
+    PacketBuffer packetBuf = PacketBuffer(pl_bytes, (int) sizeof(Payload)); // Creates a PacketBuffer 4 bytes long.
 
     uBit->radio.datagram.send(packetBuf);
 
     uBit->serial.printf("Exiting radioTest in Radar.\n"); // REMOVE PRINTING.
+}
+
+void MicroBitRadar::micTest()
+{
+    if (mic == NULL)
+    {
+        mic = uBit->adc.getChannel(uBit->io.microphone);
+        mic->setGain(7, 0); // Uncomment for v1.47.2
+        // mic->setGain(7,1);        // Uncomment for v1.46.2
+    }
+
+    if (processor == NULL)
+        processor = new StreamNormalizer(mic->output, 0.05f, true, DATASTREAM_FORMAT_8BIT_SIGNED);
+
+    if (streamer == NULL)
+        streamer = new SerialStreamer(processor->output, SERIAL_STREAM_MODE_BINARY);
+
+    uBit->io.runmic.setDigitalValue(1);
+    uBit->io.runmic.setHighDrive(true);
 }
 
 /**
@@ -85,6 +90,10 @@ void MicroBitRadar::init(/* MicroBit uBit, MicroBitRadio radio */)
     // Bring up internal speaker as high drive.
     uBit->io.speaker.setHighDrive(true);
     uBit->radio.enable();
+
+    // Make sure I know exactly what these do.
+    uBit->io.runmic.setDigitalValue(1);
+    uBit->io.runmic.setHighDrive(true);
 
     uBit->messageBus.listen(DEVICE_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData, MESSAGE_BUS_LISTENER_REENTRANT);
 

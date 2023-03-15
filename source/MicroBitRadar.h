@@ -3,6 +3,7 @@
 
 // Substitute this for the components that are needed by the Radar component.
 #include "MicroBit.h"
+#include "SerialStreamer.h"
 // #include "CodalDmesg.h"
 // #include "MicroBitAudioProcessor.h"
 // #include "StreamNormalizer.h"
@@ -40,7 +41,12 @@ namespace codal
         public:
         static MicroBitRadar *instance;                     // Primary instance of MicroBitRadar, on demand activated.
         // TODO: Make sure everything that is public, needs to be public.
-        MicroBit* uBit;
+        MicroBit *uBit;
+        static NRF52ADCChannel *mic;
+        static SerialStreamer *streamer;
+        static StreamNormalizer *processor;
+        static LevelDetector *level;
+        static LevelDetectorSPL *levelSPL;
 
         // FFT stuff.
         // static NRF52ADCChannel *mic;                // mic
@@ -89,9 +95,10 @@ namespace codal
          */
         virtual void periodicCallback();
 
-
         void init(/* MicroBit uBit, MicroBitRadio radio */);
+
         void radioTest();
+        void micTest();
 
         /**
          * Creates an example MicroBitAudioProcessor and then queries it for
