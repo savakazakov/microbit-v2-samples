@@ -47,14 +47,15 @@ namespace codal
         // static StreamNormalizer *processor;
         // static MicroBitAudioProcessor *fft;
 
-        private:
         // This has to be a max of 28 bytes
-        struct Payload
+        typedef struct __attribute__((packed)) Payload
         {
             uint32_t serial;
             // int ;
             // etc.
-        };
+        } Payload;
+
+        private:
         // bool speakerEnabled;                    // State of on board speaker
         // bool pinEnabled;                        // State of on auxiliary output pin
         // NRF52Pin *pin;                          // Auxiliary pin to route audio to
@@ -97,6 +98,8 @@ namespace codal
          * results. Currently configured to use 1024 samples with 8bit signed data.
          */
         void fft_test();
+
+        friend void onData(MicroBitEvent e);
 
         // TODO: Add all functions that I would like the radar to service.
         // Think about the API.
