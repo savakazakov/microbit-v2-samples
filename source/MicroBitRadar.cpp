@@ -50,7 +50,7 @@ void MicroBitRadar::radioTest()
 
     PacketBuffer packetBuf = PacketBuffer(pl_bytes, (int) sizeof(Payload)); // Creates a PacketBuffer 3 bytes long.
 
-    // // ##########################################################################################
+    // // // ##########################################################################################
     // uint8_t *packetPl = packetBuf.getBytes();
 
     // // Deserialise.
@@ -58,16 +58,16 @@ void MicroBitRadar::radioTest()
     // MicroBitRadar::Payload receivePlayload;
 
     // // Copy the bytes from the uint8_t pointer into the new struct.
-    // memcpy(&receivePlayload, &packetPl, (int) sizeof(MicroBitRadar::Payload));
+    // memcpy(&receivePlayload, packetPl, (int) sizeof(MicroBitRadar::Payload));
 
-    // // std::string str = std::to_string(receivePlayload.serial);
-    // // ManagedString ms = ManagedString(str.c_str());
-    // // MicroBitRadar::instance->uBit->display.scrollAsync(ms);
+    // // // std::string str = std::to_string(receivePlayload.serial);
+    // // // ManagedString ms = ManagedString(str.c_str());
+    // // // MicroBitRadar::instance->uBit->display.scrollAsync(ms);
 
-    // uBit->serial.printf("Device id after processing = %d.\n", (int) receivePlayload.serial);         // REMOVE PRINTING.
+    // uBit->serial.printf("Device id after processing = %d.\n", receivePlayload.serial);         // REMOVE PRINTING.
     // uBit->serial.printf("(int) sizeof(MicroBitRadar::Payload) = %d.\n", (int) sizeof(MicroBitRadar::Payload)); // REMOVE PRINTING.
 
-    // ##########################################################################################
+    // // ##########################################################################################
 
     uBit->radio.datagram.send(packetBuf);
 
@@ -95,9 +95,9 @@ static void onData(MicroBitEvent e)
 {
     MicroBitRadar::instance->uBit->serial.printf("In onData in Radar.\n"); // REMOVE PRINTING.
 
-    MicroBitRadar::instance->uBit->io.speaker.setAnalogValue(512);
-    MicroBitRadar::instance->uBit->sleep(100);
-    MicroBitRadar::instance->uBit->io.speaker.setAnalogValue(0);
+    MicroBitRadar::instance->uBit->io.speaker.setAnalogValue(512); // REMOVE PRINTING.
+    MicroBitRadar::instance->uBit->sleep(100);  // REMOVE PRINTING.
+    MicroBitRadar::instance->uBit->io.speaker.setAnalogValue(0); // REMOVE PRINTING.
 
     PacketBuffer packetBuf = MicroBitRadar::instance->uBit->radio.datagram.recv();
     uint8_t* packetPl = packetBuf.getBytes();
@@ -107,11 +107,10 @@ static void onData(MicroBitEvent e)
     MicroBitRadar::Payload payloadStruct;
 
     // Copy the bytes from the uint8_t pointer into the new struct.
-    memcpy(&payloadStruct, &packetPl, (int) sizeof(MicroBitRadar::Payload));
+    memcpy(&payloadStruct, packetPl, (int) sizeof(MicroBitRadar::Payload));
 
     std::string str = std::to_string(payloadStruct.serial);
-    ManagedString ms = ManagedString(str.c_str());
-    MicroBitRadar::instance->uBit->display.scrollAsync(ms);
+    MicroBitRadar::instance->uBit->serial.printf("Other uBit's serial is %s.\n", str.c_str()); // REMOVE PRINTING.
 
     MicroBitRadar::instance->uBit->serial.printf("Exiting onData in Radar.\n"); // REMOVE PRINTING.
 }
