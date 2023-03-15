@@ -38,7 +38,7 @@ namespace codal
     class MicroBitRadar/*  : public CodalComponent */
     {
         public:
-        // static MicroBitRadar *instance;                     // Primary instance of MicroBitRadar, on demand activated.
+        static MicroBitRadar *instance;                     // Primary instance of MicroBitRadar, on demand activated.
         // TODO: Make sure everything that is public, needs to be public.
         MicroBit* uBit;
 
@@ -48,6 +48,13 @@ namespace codal
         // static MicroBitAudioProcessor *fft;
 
         private:
+        // This has to be a max of 28 bytes
+        struct Payload
+        {
+            uint32_t serial;
+            // int ;
+            // etc.
+        };
         // bool speakerEnabled;                    // State of on board speaker
         // bool pinEnabled;                        // State of on auxiliary output pin
         // NRF52Pin *pin;                          // Auxiliary pin to route audio to

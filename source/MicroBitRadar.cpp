@@ -6,27 +6,29 @@
 
 using namespace codal;
 
-// MicroBitRadar *MicroBitRadar::instance = NULL;
+MicroBitRadar *MicroBitRadar::instance = NULL;
 // NRF52ADCChannel *MicroBitRadar::mic = NULL;
 // StreamNormalizer *MicroBitRadar::processor = NULL;
 // MicroBitAudioProcessor *MicroBitRadar::fft = NULL;
 
-/**
- * Constructor.
- *
- * Create the Radar component, which includes member variables
- * that represent various device drivers used for the calculations
- * performed by the radar component.
- */
-MicroBitRadar::MicroBitRadar(MicroBit* uBit)
+static void onData(MicroBitEvent e);
+
+    /**
+     * Constructor.
+     *
+     * Create the Radar component, which includes member variables
+     * that represent various device drivers used for the calculations
+     * performed by the radar component.
+     */
+    MicroBitRadar::MicroBitRadar(MicroBit *uBit)
 {
     MicroBitRadar::uBit = uBit;
     uBit->serial.printf("In radar constructor\n"); // REMOVE PRINTING.
 
     // If we are the first instance created, schedule it for on demand activation.
     // TODO: Make sure I need this.
-    // if (MicroBitRadar::instance == NULL)
-    //     MicroBitRadar::instance = this;
+    if (MicroBitRadar::instance == NULL)
+        MicroBitRadar::instance = this;
 
     // Bring up internal speaker as high drive.
     // TODO: Make sure I need this.
@@ -104,13 +106,6 @@ void MicroBitRadar::radioTest()
     uBit->io.speaker.setHighDrive(true);
     uBit->radio.enable();
 
-    struct S
-    {
-        int a;
-        int b;
-        // etc.
-    };
-
     S my_s;
     my_s.a = 8;
     my_s.b = 17;
@@ -118,11 +113,7 @@ void MicroBitRadar::radioTest()
     // serialise the struct
     uint8_t* my_s_bytes = reinterpret_cast<uint8_t *>(&my_s);
 
-    // Create a new struct to hold the converted bytes
-    S converted_s;
 
-    // Copy the bytes from the uint8_t pointer into the new struct
-    memcpy(&converted_s, my_s_bytes, sizeof(S));
 
     PacketBuffer p = PacketBuffer(my_s_bytes, (int)sizeof(S)); // Creates a PacketBuffer 3 bytes long.
     uBit->radio.datagram.send(p);
@@ -146,7 +137,30 @@ void MicroBitRadar::init(/* MicroBit uBit, MicroBitRadio radio */)
     uBit->serial.printf("In init in Radar.\n"); // REMOVE PRINTING.
     uBit->io.speaker.setHighDrive(true);
     uBit->radio.enable();
+
+    uBit->messageBus.listen(DEVICE_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData);
+
     uBit->serial.printf("Exiting init in Radar.\n"); // REMOVE PRINTING.
+}
+
+// make 
+static void onData(MicroBitEvent e)
+{
+    PacketBuffer b = MicroBitRadar::instance->uBit->radio.datagram.recv();
+    // uBit.radio.datagram.recv();
+
+    // Deserialise.
+    // Create a new struct to hold the converted bytes
+    // S converted_s;
+
+    // // Copy the bytes from the uint8_t pointer into the new struct
+    // memcpy(&converted_s, my_s_bytes, sizeof(S));
+
+    // if (b[0] == '1')
+    //     MicroBitRadar::instance->uBit->display.print("A");
+
+    // if (b[0] == '2')
+    //     MicroBitRadar::instance->uBit->display.print("B");
 }
 
 /**
