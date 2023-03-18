@@ -267,3 +267,236 @@ set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 set(CMAKE_EXE_EXPORTS_C_FLAG "")
 set(CMAKE_EXE_EXPORTS_CXX_FLAG "")
+
+
+
+#######################################
+# Solution 6.
+# cmake_minimum_required(VERSION 3.22)
+# project(codal-microbit)
+
+# find sources and headers
+# RECURSIVE_FIND_DIR(INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/inc" "*.h")
+# RECURSIVE_FIND_FILE(SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/source" "*.c??")
+
+# RECURSIVE_FIND_DIR(INCLUDE_DIRS2 "${CMAKE_CURRENT_SOURCE_DIR}/model" "*.h")
+# RECURSIVE_FIND_FILE(SOURCE_FILES2 "${CMAKE_CURRENT_SOURCE_DIR}/model" "*.c??")
+
+# list(APPEND INCLUDE_DIRS "${INCLUDE_DIRS2}")
+# list(APPEND SOURCE_FILES "${SOURCE_FILES2}")
+
+# find prebuilt libraries and objects
+# RECURSIVE_FIND_FILE(LIB_OBJECT_FILES "${CMAKE_CURRENT_LIST_DIR}/lib" "*.o")
+# RECURSIVE_FIND_FILE(LIB_ARCHIVE_FILES "${CMAKE_CURRENT_LIST_DIR}/lib" "*.a")
+
+# set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -T\"${CMAKE_CURRENT_LIST_DIR}/ld/nrf52833.ld\"" PARENT_SCOPE)
+# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T\"${CMAKE_CURRENT_LIST_DIR}/ld/nrf52833.ld\"" PARENT_SCOPE)
+# set(CMAKE_SYSTEM_PROCESSOR "armv7-m" PARENT_SCOPE)
+
+# set(ROOT "${CMAKE_CURRENT_LIST_DIR}/CMSIS_5/")
+# list(APPEND INCLUDE_DIRS "${ROOT}/CMSIS/Core/Include/")
+
+# # Define the path to CMSIS-DSP (ROOT is defined on command line when using cmake)
+# set(DSP ${ROOT}/CMSIS/DSP)
+
+# include(${DSP}/Toolchain/GCC.cmake)
+
+# # Add DSP folder to module path
+# list(APPEND CMAKE_MODULE_PATH ${DSP})
+
+# ########### 
+# #
+# # CMSIS DSP
+# #
+
+# # add them
+# include_directories(${INCLUDE_DIRS})
+
+# # Load CMSIS-DSP definitions. Libraries will be built in bin_dsp
+# add_subdirectory(${DSP}/Source bin_dsp)
+
+# create our target
+# add_library(codal-microbit ${SOURCE_FILES})
+
+# target_link_libraries(
+#     codal-microbit-next
+#     codal-nrf52
+#     codal-core
+#     codal-microbit-nrf5sdk
+#     CMSISDSPSupport
+#     CMSISDSPTransform
+#     CMSISDSPCommon
+#     CMSISDSPComplexMath
+#     CMSISDSPStatistics
+#     ${LIB_OBJECT_FILES}
+#     ${LIB_ARCHIVE_FILES}
+# )
+
+# expose it to parent cmake.
+# target_include_directories(codal-microbit PUBLIC ${INCLUDE_DIRS})
+#######################################
+
+
+
+#######################################
+# Solution 5.
+# Set the path to the CMSIS Core includes
+# set(CMSISCORE "${CMAKE_CURRENT_LIST_DIR}/CMSIS_5/CMSIS/Core")
+
+# # Set the path to the CMSIS-DSP repository
+# set(CMSISDSP "${CMAKE_CURRENT_LIST_DIR}/CMSIS-DSP/")
+
+# add_subdirectory(${CMSISDSP}/Source bin_dsp)
+
+#######################################
+
+#######################################
+# Solution 1.
+
+# # Set the path to the CMSIS Core includes
+# set(CMSISCORE "${CMAKE_CURRENT_LIST_DIR}/CMSIS_5/CMSIS/Core")
+
+# # Set the path to the CMSIS-DSP repository
+# set(CMSISDSP "${CMAKE_CURRENT_LIST_DIR}/CMSIS-DSP/")
+
+# # Add the CMSIS core library as a target
+# add_library(CMSIS INTERFACE)
+# target_include_directories(CMSIS INTERFACE ${CMSISCORE}/Include)
+
+# # Add CMSIS-DSP library
+# add_library(CMSIS-DSP STATIC
+#     ${CMSISDSP}/Source/TransformFunctions/arm_cfft_radix4_f32.c
+#     ${CMSISDSP}/Source/TransformFunctions/arm_cfft_radix8_f32.c
+#     ${CMSISDSP}/Source/TransformFunctions/arm_rfft_fast_f32.c
+#     ${CMSISDSP}/Source/CommonTables/arm_common_tables.c
+#     # Add other source files from CMSIS-DSP library if needed
+# )
+# target_include_directories(CMSIS-DSP PUBLIC ${CMSISDSP}/Include)
+
+# target_link_libraries(CMSIS-DSP PUBLIC CMSIS)
+# # target_link_libraries(codal CMSIS-DSP)
+
+##########################################################
+
+#######################################
+# Solution 2.
+
+# # Set the path to the CMSIS-DSP repository
+# set(CMSISDSP "${CMAKE_CURRENT_LIST_DIR}/CMSIS-DSP/")
+# add_library(cmsis_dsp STATIC ${CMSISDSP}/Source/)
+
+# target_include_directories(cmsis_dsp
+#     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/CMSIS-DSP/Include
+# )
+
+# target_compile_definitions(cmsis_dsp
+#     PUBLIC ARM_MATH_CM4
+# )
+
+# # target_link_libraries(${PROJECT_NAME} cmsis_dsp)
+
+
+##########################################################
+
+#######################################
+# Solution 3.
+
+# target_link_libraries(${PROJECT_NAME} m)
+
+
+##########################################################
+
+#######################################
+# Solution 4.
+# set(ROOT "${CMAKE_CURRENT_LIST_DIR}/CMSIS_5/")
+# list(APPEND INCLUDE_DIRS "${ROOT}/CMSIS/Core/Include/")
+
+
+# # Define the path to CMSIS-DSP (ROOT is defined on command line when using cmake)
+# set(DSP "${CMAKE_CURRENT_LIST_DIR}/CMSIS-DSP/")
+
+# # include(${DSP}/Toolchain/GCC.cmake)
+
+# # Add DSP folder to module path
+# list(APPEND CMAKE_MODULE_PATH ${DSP})
+
+# ########### 
+# #
+# # CMSIS DSP
+# #
+
+# # add them
+# include_directories(${INCLUDE_DIRS})
+
+# # Load CMSIS-DSP definitions. Libraries will be built in bin_dsp
+# add_subdirectory(${DSP}/Source bin_dsp)
+
+# # create our target
+# add_library(codal-microbit ${SOURCE_FILES})
+
+# target_link_libraries(
+#     codal-microbit-next
+#     codal-nrf52
+#     codal-core
+#     codal-microbit-nrf5sdk
+#     CMSISDSPSupport
+#     CMSISDSPTransform
+#     CMSISDSPCommon
+#     CMSISDSPComplexMath
+#     CMSISDSPStatistics
+#     ${LIB_OBJECT_FILES}
+#     ${LIB_ARCHIVE_FILES}
+# )
+
+# expose it to parent cmake.
+# target_include_directories(codal-microbit PUBLIC ${INCLUDE_DIRS})
+
+
+##########################################################
+
+# # Set the path to the CMSIS Core includes
+# set(CMSISCORE "${CMAKE_CURRENT_LIST_DIR}/CMSIS_5/CMSIS/Core")
+
+# # Set the path to the CMSIS-DSP repository
+# set(CMSISDSP "${CMAKE_CURRENT_LIST_DIR}/CMSIS-DSP/")
+
+# # Set the compilation options
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Ofast")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/home/savakazakov/RADAR/microbit-v2-samples/CMSIS-DSP/Include")
+
+# list(APPEND INCLUDE_DIRS "${CMSISCORE}/Include/")
+# list(APPEND INCLUDE_DIRS "${CMSISDSP}/Include/")
+
+# # Load CMSIS-DSP definitions. Libraries will be built in bin_dsp
+# add_subdirectory(${CMSISDSP}/Source bin_dsp)
+
+# # Add DSP folder to module path
+# list(APPEND CMAKE_MODULE_PATH ${CMSISDSP})
+
+########### 
+#
+# CMSIS-DSP
+#
+
+# add them
+# include_directories(${INCLUDE_DIRS})
+
+# # create our target
+# add_library(codal-microbit ${SOURCE_FILES})
+
+# target_link_libraries(
+#     codal-microbit-next
+#     codal-nrf52
+#     codal-core
+#     codal-microbit-nrf5sdk
+#     CMSISDSPSupport
+#     CMSISDSPTransform
+#     CMSISDSPCommon
+#     CMSISDSPComplexMath
+#     CMSISDSPStatistics
+#     ${LIB_OBJECT_FILES}
+#     ${LIB_ARCHIVE_FILES}
+# )
+
+# # # expose it to parent cmake.
+# target_include_directories(codal-microbit PUBLIC ${INCLUDE_DIRS})
