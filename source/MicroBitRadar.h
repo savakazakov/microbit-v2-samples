@@ -42,12 +42,16 @@ namespace codal
         static MicroBitRadar *instance;                     // Primary instance of MicroBitRadar, on demand activated.
         // TODO: Make sure everything that is public, needs to be public.
         MicroBit *uBit;
+
+        CODAL_TIMESTAMP start;
+        CODAL_TIMESTAMP end;
+        
         // static NRF52ADCChannel *mic;
-        static SerialStreamer *streamer;
-        static StreamNormalizer *processor;
-        static LevelDetector *level;
-        static LevelDetectorSPL *levelSPL;
-        static MicroBitAudioProcessor *fft;
+        // static SerialStreamer *streamer;
+        // static StreamNormalizer *processor;
+        // static LevelDetector *level;
+        // static LevelDetectorSPL *levelSPL;
+        // static MicroBitAudioProcessor *fft;
 
         // This has to be a max of 28 bytes
         typedef struct __attribute__((packed)) Payload
@@ -96,12 +100,13 @@ namespace codal
         void radioTest();
         void micTest();
         void recordingTest();
+        void pingTest();
 
-        /**
-         * Creates an example MicroBitAudioProcessor and then queries it for
-         * results. Currently configured to use 1024 samples with 8bit signed data.
-         */
-        void fft_test();
+            /**
+             * Creates an example MicroBitAudioProcessor and then queries it for
+             * results. Currently configured to use 1024 samples with 8bit signed data.
+             */
+            void fft_test();
 
         friend void onData(MicroBitEvent e);
 

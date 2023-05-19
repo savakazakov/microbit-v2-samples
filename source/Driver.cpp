@@ -9,15 +9,13 @@ MicroBitRadar* radar;
 void onPressedA(MicroBitEvent e)
 {
     // 8 kHz.
-    // uBit.io.speaker.setAnalogPeriodUs(125);
-    // uBit.io.speaker.setAnalogValue(512);
-
-    // radar->radioTest();
+    uBit.io.speaker.setAnalogPeriodUs(125);
+    uBit.io.speaker.setAnalogValue(512);
 }
 
 void onReleasedA(MicroBitEvent e)
 {
-    // uBit.io.speaker.setAnalogValue(0);
+    uBit.io.speaker.setAnalogValue(0);
 }
 
 void onPressedB(MicroBitEvent e)
@@ -25,6 +23,7 @@ void onPressedB(MicroBitEvent e)
     // 2.7 kHz.
     // uBit.io.speaker.setAnalogPeriodUs(370);
     // uBit.io.speaker.setAnalogValue(512);
+    radar->pingTest();
 }
 
 void onReleasedB(MicroBitEvent e)
@@ -50,12 +49,10 @@ int main()
     radar = new MicroBitRadar(&uBit);
     radar->init();
 
-    // uBit.adc.get
-
     // TODO configure this:
     uBit.audio.micFilter->setBeta(1.0f);
 
-    radar->fft_test();
+    // radar->fft_test();
 
     uBit.serial.printf("After initializing radar.\n"); // REMOVE PRINTING.
 

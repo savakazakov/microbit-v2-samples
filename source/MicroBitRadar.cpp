@@ -1,27 +1,33 @@
 #include "MicroBitRadar.h"
 #include "CodalDmesg.h"
 #include <string>
+#include <cstdio>
+
+// Speed of sound at 20 degrees Celsius in m/s.
+#define SOUND_VEL_MS            343
 
 using namespace codal;
 
 MicroBitRadar *MicroBitRadar::instance = NULL;
 // NRF52ADCChannel *MicroBitRadar::mic = NULL;
-MicroBitAudioProcessor *MicroBitRadar::fft = NULL;
-SerialStreamer *MicroBitRadar::streamer = NULL;
-StreamNormalizer *MicroBitRadar::processor = NULL;
-LevelDetector *MicroBitRadar::level = NULL;
-LevelDetectorSPL *MicroBitRadar::levelSPL = NULL;
+// MicroBitAudioProcessor *MicroBitRadar::fft = NULL;
+// SerialStreamer *MicroBitRadar::streamer = NULL;
+// StreamNormalizer *MicroBitRadar::processor = NULL;
+// LevelDetector *MicroBitRadar::level = NULL;
+// LevelDetectorSPL *MicroBitRadar::levelSPL = NULL;
 
 static void onData(MicroBitEvent e);
+static void onPing(MicroBitEvent e);
 
-    /**
-     * Constructor.
-     *
-     * Create the Radar component, which includes member variables
-     * that represent various device drivers used for the calculations
-     * performed by the radar component.
-     */
-    MicroBitRadar::MicroBitRadar(MicroBit *uBit)
+
+/**
+ * Constructor.
+ *
+ * Create the Radar component, which includes member variables
+ * that represent various device drivers used for the calculations
+ * performed by the radar component.
+ */
+MicroBitRadar::MicroBitRadar(MicroBit *uBit)
 {
     uBit->serial.printf("In radar constructor\n"); // REMOVE PRINTING.
     MicroBitRadar::uBit = uBit;
@@ -70,16 +76,7 @@ void MicroBitRadar::fft_test()
     uBit->serial.printf("In MicroBitRadar - fft_test - Start,");
     uBit->display.print("F");
 
-    // Try and use the audio pipeline defined in MicroBitAudio
-    // if (processor == NULL)
-    //     processor = new StreamNormalizer(uBit->audio.mic->output, 1.0f, true, DATASTREAM_FORMAT_8BIT_SIGNED, 10);
-
-    // // DataSource& source, Pin &p, bool connectImmediately
-    // if (fft == NULL)
-    //     fft = new MicroBitAudioProcessor(processor->output, uBit->io.speaker, true);
-
     // Start fft running
-    // fft->startRecording();
     uBit->audio.fft->startRecording();
 
     DMESG("After start recording."); // REMOVE
@@ -94,7 +91,7 @@ void MicroBitRadar::fft_test()
         // of the FFT - which is changed using the 'AUDIO_SAMPLES_NUMBER' in
         // MicroBitAudioProcessor.h default is 1024
         uBit->sleep(500);
-        int freq = fft->getFrequency();
+        int freq = uBit->audio.fft->getFrequency();
         DMESG("%s %d", "frequency: ", freq);
         if (freq > 0)
             uBit->display.print("?");
@@ -120,6 +117,30 @@ void MicroBitRadar::fft_test()
 }
 
 /**
+ * ping test.
+ */
+void MicroBitRadar::pingTest()
+{
+    // uBit->serial.printf("In MicroBitRadar - pingTest - Start,");
+    uBit->display.print("P");
+
+    // Start fft running.
+    // uBit->audio.fft->startRecording();
+
+    radioTest();
+
+    // Pulse 8kHz.
+    uBit->io.speaker.setAnalogValue(512);
+    system_timer_wait_ms(1000);
+    uBit->io.speaker.setAnalogValue(0);
+
+    // DMESG("After start recording.");                                          // REMOVE
+    // DMESG("sample period in microseconds = %d", uBit->adc.getSamplePeriod()); // REMOVE
+
+    // uBit->serial.printf("In MicroBitRadar - fft_test - End,");
+}
+
+/**
  * Internal constructor-initialiser.
  * TODO: Add anything that needs to be initialised prior radaring here.
  */
@@ -136,18 +157,43 @@ void MicroBitRadar::init(/* MicroBit uBit, MicroBitRadio radio */)
     uBit->io.runmic.setHighDrive(true);
 
     uBit->messageBus.listen(DEVICE_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData, MESSAGE_BUS_LISTENER_REENTRANT);
+    uBit->messageBus.listen(DEVICE_ID_AUDIO_PROCESSOR, 1, onPing, MESSAGE_BUS_LISTENER_IMMEDIATE);
     // uBit->adc.setSamplePeriod(454); // REMOVE. TESTING
 
     uBit->serial.printf("Exiting init in Radar.\n"); // REMOVE PRINTING.
 }
 
+static void onPing(MicroBitEvent e)
+{
+    // MicroBitRadar::instance->uBit->serial.printf("In onPing in Radar.\n"); // REMOVE PRINTING.
+
+    DMESG("Printing event value = %d", (int)e.value);
+
+    // Divide by 1e-6. to get to seconds.
+    float timestampDiff = (e.timestamp - MicroBitRadar::instance->start) /* / ((float32_t) 1e-6) */;
+
+    // Perform the distance calculation.
+    float distanceInMeters = timestampDiff * SOUND_VEL_MS;
+
+    char distStr[50];
+    int n = sprintf(distStr, "%f", (float) distanceInMeters);
+
+    DMESG("Distance = %d, s is %d long", (int) distanceInMeters, n);
+    // DMESG("Distance = %d, s is %d long", (int) distanceInMeters);
+
+    MicroBitRadar::instance->uBit->serial.printf("Exiting onPing in Radar.\n"); // REMOVE PRINTING.
+}
+
 static void onData(MicroBitEvent e)
 {
-    MicroBitRadar::instance->uBit->serial.printf("In onData in Radar.\n"); // REMOVE PRINTING.
+    // MicroBitRadar::instance->uBit->serial.printf("In onData in Radar.\n"); // REMOVE PRINTING.
 
-    MicroBitRadar::instance->uBit->io.speaker.setAnalogValue(512); // REMOVE PRINTING.
-    MicroBitRadar::instance->uBit->sleep(100);  // REMOVE PRINTING.
-    MicroBitRadar::instance->uBit->io.speaker.setAnalogValue(0); // REMOVE PRINTING.
+    MicroBitRadar::instance->start = system_timer_current_time_us();
+    DMESG("e.timestamp in radio = %d", (int) system_timer_current_time_us());
+
+    // MicroBitRadar::instance->uBit->io.speaker.setAnalogValue(512); // REMOVE PRINTING.
+    // MicroBitRadar::instance->uBit->sleep(100);  // REMOVE PRINTING.
+    // MicroBitRadar::instance->uBit->io.speaker.setAnalogValue(0); // REMOVE PRINTING.
 
     PacketBuffer packetBuf = MicroBitRadar::instance->uBit->radio.datagram.recv();
     uint8_t* packetPl = packetBuf.getBytes();
