@@ -19,7 +19,6 @@ MicroBitRadar *MicroBitRadar::instance = NULL;
 static void onData(MicroBitEvent e);
 static void onPing(MicroBitEvent e);
 
-
 /**
  * Constructor.
  *
@@ -47,7 +46,7 @@ MicroBitRadar::~MicroBitRadar()
 
 void MicroBitRadar::radioTest()
 {
-    uBit->serial.printf("In radioTest in Radar.\n"); // REMOVE PRINTING.
+    // uBit->serial.printf("In radioTest in Radar.\n"); // REMOVE PRINTING.
 
     uBit->serial.printf("Device id = %d.\n", microbit_serial_number()); // REMOVE PRINTING.
     uBit->serial.printf("(int) sizeof(Payload) = %d.\n", (int) sizeof(Payload)); // REMOVE PRINTING.
@@ -64,7 +63,7 @@ void MicroBitRadar::radioTest()
 
     uBit->radio.datagram.send(packetBuf);
 
-    uBit->serial.printf("Exiting radioTest in Radar.\n"); // REMOVE PRINTING.
+    // uBit->serial.printf("Exiting radioTest in Radar.\n"); // REMOVE PRINTING.
 }
 
 /**
@@ -73,7 +72,7 @@ void MicroBitRadar::radioTest()
  */
 void MicroBitRadar::fft_test()
 {
-    uBit->serial.printf("In MicroBitRadar - fft_test - Start,");
+    // uBit->serial.printf("In MicroBitRadar - fft_test - Start,");
     uBit->display.print("F");
 
     // Start fft running
@@ -131,11 +130,11 @@ void MicroBitRadar::pingTest()
 
     // Pulse 8kHz.
     uBit->io.speaker.setAnalogValue(512);
-    system_timer_wait_ms(1000);
+    system_timer_wait_ms(500);
     uBit->io.speaker.setAnalogValue(0);
 
-    // DMESG("After start recording.");                                          // REMOVE
-    // DMESG("sample period in microseconds = %d", uBit->adc.getSamplePeriod()); // REMOVE
+    DMESG("After start recording.");                                          // REMOVE
+    DMESG("sample period in microseconds = %d", uBit->adc.getSamplePeriod()); // REMOVE
 
     // uBit->serial.printf("In MicroBitRadar - fft_test - End,");
 }
@@ -157,6 +156,7 @@ void MicroBitRadar::init(/* MicroBit uBit, MicroBitRadio radio */)
     uBit->io.runmic.setHighDrive(true);
 
     uBit->messageBus.listen(DEVICE_ID_RADIO, MICROBIT_RADIO_EVT_DATAGRAM, onData, MESSAGE_BUS_LISTENER_REENTRANT);
+    // uBit->messageBus.listen(DEVICE_ID_AUDIO_PROCESSOR, 1, onPing, MESSAGE_BUS_LISTENER_IMMEDIATE);
     uBit->messageBus.listen(DEVICE_ID_AUDIO_PROCESSOR, 1, onPing, MESSAGE_BUS_LISTENER_IMMEDIATE);
     // uBit->adc.setSamplePeriod(454); // REMOVE. TESTING
 

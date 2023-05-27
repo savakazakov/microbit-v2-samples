@@ -28,7 +28,7 @@ else
 fi
 
 if [ ${#dirs[@]} -eq 0 ]; then
-    echo "So Micro:Bits?"
+    echo "So no, Micro:Bits?"
     exit 1
 fi
 

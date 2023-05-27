@@ -102,11 +102,11 @@ namespace codal
         void recordingTest();
         void pingTest();
 
-            /**
-             * Creates an example MicroBitAudioProcessor and then queries it for
-             * results. Currently configured to use 1024 samples with 8bit signed data.
-             */
-            void fft_test();
+        /**
+         * Creates an example MicroBitAudioProcessor and then queries it for
+         * results. Currently configured to use 1024 samples with 8bit signed data.
+         */
+        void fft_test();
 
         friend void onData(MicroBitEvent e);
 
