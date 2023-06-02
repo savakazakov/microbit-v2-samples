@@ -8,13 +8,14 @@ import re
 
 import os, re, json, xml.etree.ElementTree
 from optparse import OptionParser
+import subprocess
 
 
 def system(cmd):
     if os.system(cmd) != 0:
       sys.exit(1)
 
-def build(clean, verbose = False):
+def build(clean, verbose = False, parallelism = 10):
     if platform.system() == "Windows":
         # configure
         system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Ninja\"")
@@ -24,9 +25,9 @@ def build(clean, verbose = False):
 
         # build
         if verbose:
-            system("ninja --verbose")
+            system(f"ninja -j {parallelism} --verbose")
         else:
-            system("ninja")
+            system(f"ninja -j {parallelism}")
     else:
         # configure
         system("cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -G \"Unix Makefiles\"")
@@ -36,9 +37,9 @@ def build(clean, verbose = False):
 
         # build
         if verbose:
-            system("make -j 10 VERBOSE=1")
+            system(f"make -j {parallelism} VERBOSE=1")
         else:
-            system("make -j 10")
+            system(f"make -j {parallelism}")
 
 def read_json(fn):
     json_file = ""
@@ -80,22 +81,34 @@ def revision(rev):
     os.chdir(dirname)
     update(True)
 
-def printstatus():
+def printstatus( logLines = 3 ):
     print("\n***%s" % os.getcwd())
-    system("git status -s")
-    system("git rev-parse HEAD")
-    system("git branch --show-current")
+    branch = str(subprocess.check_output( [ "git", "branch", "--show-current"] ), "utf8").strip()
+    hash   = str(subprocess.check_output( [ "git", "rev-parse", "HEAD" ] ), "utf8").strip()
+    tag    = "..."
+    try:
+        tag = str(subprocess.check_output( [ "git", "describe", "--tags", "--abbrev=0" ], stderr=subprocess.STDOUT ), "utf8").strip()
+    except subprocess.CalledProcessError as e:
+        tag = "~none~"
+    
+    print( f"Branch: {branch}, Nearest Tag: {tag} ({hash})" )
+    system( f"git --no-pager log -n {logLines} --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit" )
+    #system(f"git --no-pager log -n {logLines} --pretty=oneline")
+    print( "" )
+    system("git status -sb")
+    print( "" )
+    
 
-def status():
+def status( logLines = 3 ):
     (codal, targetdir, target) = read_config()
     dirname = os.getcwd()
     for ln in target['libraries']:
         os.chdir(dirname + "/libraries/" + ln['name'])
-        printstatus()
+        printstatus( logLines )
     os.chdir(dirname + "/libraries/" + targetdir)
-    printstatus()
+    printstatus( logLines )
     os.chdir(dirname)
-    printstatus()
+    printstatus( logLines )
 
 def get_next_version(options):
     if options.version:

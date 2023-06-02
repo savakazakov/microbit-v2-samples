@@ -4,32 +4,28 @@
 // Substitute this for the components that are needed by the Radar component.
 #include "MicroBit.h"
 #include "SerialStreamer.h"
-// #include "CodalDmesg.h"
-// #include "MicroBitAudioProcessor.h"
-// #include "StreamNormalizer.h"
-// #include "Tests.h"
-// #include "arm_math.h"
-// #include "Timer.h"
-// #include "MicroBitDevice.h"
-// #include "CodalDmesg.h"
 
-// #define MICROBIT_UBIT_AS_STATIC_OBJECT
+// Speed of sound at 20 degrees Celsius in m/s (or millimeters/millisecond).
+#define SOUND_VEL_MS                    343
+// The maximum distance that is of mean to the application in meters.
+#define MAX_DIST_MEASURE                20
+// The maximum delay (in milliseconds) that is to be waited for a 
+// sound signal to arrive after a radio signal has been observed.
+#define MAX_SOUND_DELAY                 (int) (1000.0 * MAX_DIST_MEASURE / SOUND_VEL_MS) 
 
-// #ifdef MICROBIT_UBIT_AS_STATIC_OBJECT
-// extern MicroBit uBit;
-// #else
-// extern MicroBit &uBit;
-// #endif
+// The default MicroBitRadar communication parameters.
+#define PRIMARY_RADAR_FREQUENCY         2700            // Translates to an analog period of 370 us.
+#define PRIMARY_RADAR_PERIOD            370             // Translates to a frequency of 2700 Hz.
+#define SECONDARY_RADAR_FREQUENCY       8000            // Translates to an analog period of 125 us.
+#define SECONDARY_RADAR_PERIOD          125             // Translates to a frequency of 8000 Hz.
+#define DUTY_CYCLE_50                   512             // Used to turn on the speaker.
+#define DUTY_CYCLE_0                    0               // Used to turn on the speaker.
+#define RADAR_THRESHOLD                 1000000         // Subject to calibration. Set to 1000000 if not sure
+#define RADAR_ADC_FREQUENCY             100000          // In Hz.
+#define RADAR_ADC_PERIOD                (1e6 / RADAR_ADC_FREQUENCY) // In microseconds.
 
-// Status Flags
-// #define MICROBIT_AUDIO_STATUS_DEEPSLEEP 0x0001
-// #define CONFIG_DEFAULT_MICROPHONE_GAIN 0.1f
-
-// Configurable options
-// #ifndef CONFIG_AUDIO_MIXER_OUTPUT_LATENCY_US
-// #define CONFIG_AUDIO_MIXER_OUTPUT_LATENCY_US                                                       
-//     (uint32_t)((CONFIG_MIXER_BUFFER_SIZE / 2) * (1000000.0f / 44100.0f))
-// #endif
+// Events.
+#define MICROBIT_RADAR_EVT_STOP_RECORDING 1
 
 namespace codal
 {
@@ -39,12 +35,12 @@ namespace codal
     class MicroBitRadar/*  : public CodalComponent */
     {
         public:
-        static MicroBitRadar *instance;                     // Primary instance of MicroBitRadar, on demand activated.
-        // TODO: Make sure everything that is public, needs to be public.
-        MicroBit *uBit;
+        static MicroBitRadar*           instance; // Primary instance of MicroBitRadar, on demand activated.
 
-        CODAL_TIMESTAMP start;
-        CODAL_TIMESTAMP end;
+        // TODO: Make sure everything that is public, needs to be public.
+        MicroBit*                       uBit;
+        CODAL_TIMESTAMP                 radioReceived = 0;
+        CODAL_TIMESTAMP                 soundReceived = 0;
         
         // static NRF52ADCChannel *mic;
         // static SerialStreamer *streamer;
@@ -57,8 +53,6 @@ namespace codal
         typedef struct __attribute__((packed)) Payload
         {
             uint32_t serial;
-            // int ;
-            // etc.
         } Payload;
 
         private:
@@ -76,6 +70,8 @@ namespace codal
         // int micDriverTimeout;
 
         public:
+        // int testFreqCounter = 0;    // REMOVE
+        // int testEventCodeCounter = 0;   // REMOVE
 
         /**
          * Constructor.
@@ -88,27 +84,28 @@ namespace codal
         ~MicroBitRadar();
 
         /**
-         * TODO: Refine this comment.
          * TODO: Make sure I need periodic callback.
          * A periodic callback.
          * Used to trigger the radar algorithm.
          */
         virtual void periodicCallback();
 
-        void init(/* MicroBit uBit, MicroBitRadio radio */);
-
+        void init();
         void radioTest();
         void micTest();
         void recordingTest();
-        void pingTest();
+        void distanceTest();
+        void subscribeTest();
+        void unsubscribeTest();
 
         /**
          * Creates an example MicroBitAudioProcessor and then queries it for
          * results. Currently configured to use 1024 samples with 8bit signed data.
          */
-        void fft_test();
+        void fftTest();
 
-        friend void onData(MicroBitEvent e);
+        friend void onRadarRadio(MicroBitEvent e);
+        friend void onMaxSoundDelay(MicroBitEvent e);
 
         // TODO: Add all functions that I would like the radar to service.
         // Think about the API.
